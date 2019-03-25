@@ -55,11 +55,14 @@ class Device:
         if port:
             self.dev = serial.Serial(port, BAUD, timeout=TIMEOUT)
 
-    def find_device(self):
+    def find_device(self,preloader=False):
         if self.dev:
             raise RuntimeError("Device already found")
 
-        log("Waiting for bootrom")
+        if preloader:
+            log("Waiting for preloader")
+        else:
+            log("Waiting for bootrom")
 
         old = serial_ports()
         while True:
@@ -103,6 +106,16 @@ class Device:
         self.check(self._writeb(b'\x0a'), b'\xf5')
         self.check(self._writeb(b'\x50'), b'\xaf')
         self.check(self._writeb(b'\x05'), b'\xfa')
+
+    def handshake2(self, cmd='FACTFACT'):
+        # look for start byte
+        c = 0
+        while c != b'Y':
+            c = self.dev.read()
+        log("Preloader ready, sending " + cmd)
+        command = str.encode(cmd)
+        self.dev.write(command)
+        self.dev.flushInput()
 
     def read32(self, addr, size=1):
         result = []
