@@ -123,6 +123,13 @@ int main() {
             mmc_rpmb_write(&host, buf);
             break;
         }
+        case 0x5000: {
+            uint32_t address = recv_dword();
+            uint32_t size = recv_dword();
+            printf("Read %d Bytes from address 0x%08X\n", size, address);
+            send_data(address, size);
+            break;
+        }
         case 0x3000: {
             printf("Reboot\n");
             volatile uint32_t *reg = (volatile uint32_t *)0x10007000;

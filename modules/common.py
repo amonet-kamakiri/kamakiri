@@ -230,6 +230,22 @@ class Device:
 
         return data
 
+    def mem_read(self, address, size):
+        # magic
+        self.dev.write(p32_be(0xf00dd00d))
+        # cmd
+        self.dev.write(p32_be(0x5000))
+        # address
+        self.dev.write(p32_be(address))
+        # size
+        self.dev.write(p32_be(size))
+
+        data = self.dev.read(size)
+        if len(data) != size:
+            raise RuntimeError("read fail")
+
+        return data
+
     def rpmb_write(self, data):
         if len(data) != 0x100:
             raise RuntimeError("data must be 0x100 bytes")
