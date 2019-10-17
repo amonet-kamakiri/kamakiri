@@ -96,6 +96,9 @@ def main(dev):
     switch_boot0(dev)
     flash_binary(dev, "../bin/preloader.img", 0)
 
+    # 9.1) Wait some time so data is flushed to EMMC
+    time.sleep(5)
+
     # Reboot (to fastboot or recovery)
     log("Reboot")
     dev.reboot()
