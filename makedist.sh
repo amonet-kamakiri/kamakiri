@@ -26,6 +26,11 @@ cp {bootrom-step.sh,fastboot-step.sh} dist/unlock/kamakiri/
 #cp bin/{boot.img,recovery.img} dist/stock/kamakiri/bin/
 #cp return-to-stock.sh dist/stock/kamakiri/
 
+mkdir -p dist/gptfix/kamakiri/bin
+cp gpt-fix.sh dist/gptfix/kamakiri/
+cp bin/gpt-mantis.bin dist/gptfix/kamakiri/bin/
+
 mkdir -p dist/full
 cp -r dist/unlock/* dist/full/
 #cp -r dist/stock/* dist/full/
+cp -r dist/gptfix/* dist/full/

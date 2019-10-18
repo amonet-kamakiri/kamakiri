@@ -23,6 +23,11 @@ def main(dev):
 
     load_payload(dev)
 
+    if len(sys.argv) == 2 and sys.argv[1] == "fixgpt":
+        dev.emmc_switch(0)
+        log("Flashing GPT")
+        flash_binary(dev, "../bin/gpt-mantis.bin", 0, 34 * 0x200)
+
     # 1) Sanity check GPT
     log("Check GPT")
     switch_user(dev)
@@ -108,10 +113,7 @@ if __name__ == "__main__":
 
     check_modemmanager()
 
-    if len(sys.argv) > 1:
-        dev = Device(sys.argv[1])
-    else:
-        dev = Device()
-        dev.find_device()
+    dev = Device()
+    dev.find_device()
 
     main(dev)
