@@ -19,8 +19,8 @@ cp brom-payload/stage2/stage2.bin dist/unlock/kamakiri/brom-payload/stage2/
 
 cp {bootrom-step.sh,fastboot-step.sh} dist/unlock/kamakiri/
 
-#mkdir -p dist/unlock/META-INF/com/google/android
-#cp META-INF/com/google/android/{update-binary,updater-script} dist/unlock/META-INF/com/google/android/
+mkdir -p dist/unlock/META-INF/com/google/android
+cp META-INF/com/google/android/{update-binary,updater-script} dist/unlock/META-INF/com/google/android/
 
 #mkdir -p dist/stock/kamakiri/bin
 #cp bin/{boot.img,recovery.img} dist/stock/kamakiri/bin/
