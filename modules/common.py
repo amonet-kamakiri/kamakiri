@@ -4,6 +4,7 @@ import glob
 import time
 
 import serial
+import serial.tools.list_ports
 
 from logger import log
 
@@ -14,7 +15,7 @@ TIMEOUT = 5
 CRYPTO_BASE = 0x10210000 # for karnak
 
 
-def serial_ports ():
+def serial_ports (vid="0E8D", pid="0003"):
     """ Lists available serial ports
 
         :raises EnvironmentError:
@@ -23,26 +24,24 @@ def serial_ports ():
             A set containing the serial ports available on the system
     """
 
-    if sys.platform.startswith("win"):
-        ports = [ "COM{0:d}".format(i + 1) for i in range(256) ]
-    elif sys.platform.startswith("linux"):
-        ports = glob.glob("/dev/ttyACM*")
-    elif sys.platform.startswith("darwin"):
-        ports = glob.glob("/dev/cu.usbmodem*")
-    else:
-        raise EnvironmentError("Unsupported platform")
-
     result = set()
+    ports = list(serial.tools.list_ports.comports())
     for port in ports:
-        try:
-            s = serial.Serial(port, timeout=TIMEOUT)
-            s.close()
-            result.add(port)
-        except (OSError, serial.SerialException):
-            pass
+        if hasattr(port, 'hwid'):
+            portHwid = port.hwid
+            portDevice = port.device
+        else:
+            portHwid = port[2]
+            portDevice = port[0]
+        if vid and pid in portHwid:
+            try:
+                s = serial.Serial(portDevice, timeout=TIMEOUT)
+                s.close()
+                result.add(portDevice)
+            except (OSError, serial.SerialException):
+                pass
 
     return result
-
 
 def p32_be(x):
     return struct.pack(">I", x)
@@ -61,12 +60,16 @@ class Device:
 
         if preloader:
             log("Waiting for preloader")
+            vid = "0E8D"
+            pid = "2000"
         else:
             log("Waiting for bootrom")
+            vid = "0E8D"
+            pid = "0003"
 
-        old = serial_ports()
+        old = serial_ports(vid, pid)
         while True:
-            new = serial_ports()
+            new = serial_ports(vid, pid)
 
             # port added
             if new > old:
