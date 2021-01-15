@@ -17,7 +17,7 @@ int main() {
 
     //This is so we don't get a USB-Timeout
     print("Send USB response\n");
-    send_usb_response(0,0,1);
+    send_usb_response(1,0,1);
 
     print("Entering command loop\n");
     send_dword(0xA1A2A3A4);
