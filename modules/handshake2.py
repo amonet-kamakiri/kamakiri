@@ -14,7 +14,7 @@ if __name__ == "__main__":
         dev = Device(sys.argv[2])
     else:
         dev = Device()
-        dev.find_device(True)
+        dev.find_device()
 
     if len(sys.argv) > 1:
         cmd = sys.argv[1]

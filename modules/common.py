@@ -10,12 +10,14 @@ from logger import log
 
 BAUD = 115200
 TIMEOUT = 5
+VID = "0E8D"
+PID = "0003"
 
 
 CRYPTO_BASE = 0x10210000 # for karnak
 
 
-def serial_ports (vid="0E8D", pid="0003"):
+def serial_ports ():
     """ Lists available serial ports
 
         :raises EnvironmentError:
@@ -33,43 +35,45 @@ def serial_ports (vid="0E8D", pid="0003"):
         else:
             portHwid = port[2]
             portDevice = port[0]
-        if vid and pid in portHwid:
+        if VID in portHwid:
             try:
                 s = serial.Serial(portDevice, timeout=TIMEOUT)
                 s.close()
-                result.add(portDevice)
+                result.add(port)
             except (OSError, serial.SerialException):
                 pass
 
     return result
 
+def to_bytes(data, size = 1, endian = ">"):
+    if size == 4:
+        return struct.pack(endian + "I", data)
+    elif size == 2:
+        return struct.pack(endian + "H", data)
+    else:
+        return struct.pack(endian + "B", data)
+
 def p32_be(x):
-    return struct.pack(">I", x)
+    return to_bytes(x, 4)
 
 
 class Device:
 
     def __init__(self, port=None):
         self.dev = None
+        self.preloader = False
         if port:
             self.dev = serial.Serial(port, BAUD, timeout=TIMEOUT)
 
-    def find_device(self,preloader=False):
+    def find_device(self):
         if self.dev:
             raise RuntimeError("Device already found")
 
-        if preloader:
-            log("Waiting for preloader")
-            vid = "0E8D"
-            pid = "2000"
-        else:
-            log("Waiting for bootrom")
-            vid = "0E8D"
-            pid = "0003"
+        log("Waiting for device")
 
-        old = serial_ports(vid, pid)
+        old = serial_ports()
         while True:
-            new = serial_ports(vid, pid)
+            new = serial_ports()
 
             # port added
             if new > old:
@@ -81,9 +85,12 @@ class Device:
 
             time.sleep(0.25)
 
-        log("Found port = {}".format(port))
+        log("Found port = {}".format(port.device))
 
-        self.dev = serial.Serial(port, BAUD, timeout=TIMEOUT)
+        if not PID in port.hwid:
+            self.preloader = True
+
+        self.dev = serial.Serial(port.device, BAUD, timeout=TIMEOUT)
 
     def check(self, test, gold):
         if test != gold:
@@ -275,3 +282,46 @@ class Device:
         self.dev.write(p32_be(0x2001))
         # data
         self.dev.write(data)
+
+    def write(self, data, size=1):
+        if type(data) != bytes:
+            data = to_bytes(data, size)
+
+        self.dev.write(data)
+
+    def read(self, size=1):
+        return self.dev.read(size)
+
+    def echo(self, words, size=1):
+        self.write(words, size)
+        self.check(self.read(size), to_bytes(words, size))
+
+    def send_da(self, da_address, da_len, sig_len, da):
+        self.echo(0xD7)
+
+        self.echo(da_address, 4)
+        self.echo(da_len, 4)
+        self.echo(sig_len, 4)
+
+        self.check(self.read(2), to_bytes(0, 2))
+
+        self.dev.write(da)
+
+        checksum = self.dev.read(2)
+
+        self.check(self.read(2), to_bytes(0, 2))
+
+    def jump_da(self, da_address):
+        self.echo(0xD5)
+
+        self.echo(da_address, 4)
+
+        self.check(self.read(2), to_bytes(0, 2))
+
+    def crash_pl(self):
+        try:
+            payload = b'\x00\x01\x9F\xE5\x10\xFF\x2F\xE1' + b'\x00' * 0x110
+            self.send_da(0, len(payload), 0, payload)
+            self.jump_da(0)
+        except RuntimeError as e:
+            log(e)
