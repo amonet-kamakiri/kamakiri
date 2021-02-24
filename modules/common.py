@@ -102,8 +102,11 @@ class Device:
         while True:
             c = self._writeb(b'\xa0')
             if c == b'\x5f':
+                self.dev.flushInput()
+                self.dev.flushOutput()
                 break
             self.dev.flushInput()
+            self.dev.flushOutput()
 
         # complete sequence
         self.check(self._writeb(b'\x0a'), b'\xf5')
