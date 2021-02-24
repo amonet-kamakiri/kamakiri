@@ -106,8 +106,8 @@ dd if=${INSTALLER}/kamakiri/bin/twrp.img of=${PART_PREFIX}/by-name/boot bs=512 c
 
 echo 0 > /sys/block/mmcblk0boot0/force_ro
 
-#ui_print "- updating preloader"
-#dd if=/${INSTALLER}/kamakiri/bin/preloader.img of=/dev/block/mmcblk0boot0 bs=512
+ui_print "- updating preloader"
+dd if=/${INSTALLER}/kamakiri/bin/preloader.img of=/dev/block/mmcblk0boot0 bs=512
 
 ui_print "- updating payload"
 dd if=/${INSTALLER}/kamakiri/lk-payload/build/payload.bin of=/dev/block/mmcblk0boot0 bs=512 seek=${PAYLOAD_BLOCK}
