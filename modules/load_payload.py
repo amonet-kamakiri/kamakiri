@@ -40,6 +40,19 @@ def attempt2(d):
 def noop(*args, **kwargs):
     pass
 
+def load_pl_payload(dev):
+    log("Handshake")
+    dev.handshake()
+    payload = load_payload_file("../brom-payload/pl/pl.bin")
+    dev.send_da(0x40001000, len(payload), 0, payload)
+    dev.jump_da(0x40001000)
+
+    data = dev.dev.read(4)
+    if data != b"\xB1\xB2\xB3\xB4":
+        raise RuntimeError("received {} instead of expected pattern".format(data))
+
+    log("All good")
+
 def load_payload(dev):
     log("Handshake")
     dev.handshake()

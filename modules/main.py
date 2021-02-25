@@ -5,7 +5,7 @@ import time
 
 from common import Device
 from logger import log
-from load_payload import load_payload
+from load_payload import load_payload, load_pl_payload
 from functions import *
 
 import usb.core
@@ -21,7 +21,10 @@ import os
 
 def main(dev):
 
-    load_payload(dev)
+    if dev.preloader:
+        load_pl_payload(dev)
+    else:
+        load_payload(dev)
 
     if len(sys.argv) == 2 and sys.argv[1] == "fixgpt":
         dev.emmc_switch(0)
@@ -52,11 +55,12 @@ def main(dev):
             dev.kick_watchdog()
             time.sleep(1)
 
-    # Clear preloader so, we get into bootrom without shorting, should the script stall (we flash preloader as last step)
-    # 4) Downgrade preloader
-    log("Clear preloader header")
-    switch_boot0(dev)
-    flash_data(dev, b"EMMC_BOOT" + b"\x00" * ((0x200 * 4) - 9), 0)
+    if not dev.preloader:
+        # Clear preloader so, we get into bootrom without shorting, should the script stall (we flash preloader as last step)
+        # 4) Downgrade preloader
+        log("Clear preloader header")
+        switch_boot0(dev)
+        flash_data(dev, b"EMMC_BOOT" + b"\x00" * ((0x200 * 4) - 9), 0)
 
     # 5) Zero out rpmb to enable downgrade
     log("Downgrade rpmb")
@@ -96,10 +100,11 @@ def main(dev):
     log("Force fastboot")
     force_fastboot(dev, gpt)
 
-    # 9) Install preloader
-    log("Flash preloader")
-    switch_boot0(dev)
-    flash_binary(dev, "../bin/preloader.img", 0)
+    if not dev.preloader:
+        # 9) Install preloader
+        log("Flash preloader")
+        switch_boot0(dev)
+        flash_binary(dev, "../bin/preloader.img", 0)
 
     # 9.1) Wait some time so data is flushed to EMMC
     time.sleep(5)
@@ -116,12 +121,13 @@ if __name__ == "__main__":
     dev = Device()
     dev.find_device()
 
-    while dev.preloader:
-        log("Found device in preloader mode, trying to crash...")
-        dev.handshake()
-        dev.crash_pl()
-        dev.dev.close()
-        dev = Device()
-        dev.find_device()
+    if (len(sys.argv) == 2 and sys.argv[1] == "crash") or (len(sys.argv) == 3 and sys.argv[2] == "crash"):
+        while dev.preloader:
+            log("Found device in preloader mode, trying to crash...")
+            dev.handshake()
+            dev.crash_pl()
+            dev.dev.close()
+            dev = Device()
+            dev.find_device()
 
     main(dev)
