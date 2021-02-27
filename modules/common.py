@@ -35,6 +35,12 @@ def serial_ports ():
         else:
             portHwid = port[2]
             portDevice = port[0]
+
+        class pdev:
+            hwid = portHwid
+            device = portDevice
+        port = pdev()
+
         if VID in portHwid:
             try:
                 s = serial.Serial(portDevice, timeout=TIMEOUT)
