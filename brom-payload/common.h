@@ -3,22 +3,22 @@
 
 #include <inttypes.h>
 
-void (*jump_bl)(void);
-void (*send_usb_response)(int, int, int);
-void (**ptr_send)();
-void (**ptr_recv)();
-void (*orig_ptr_send)();
-void (*orig_ptr_recv)();
+extern void (*jump_bl)(void);
+extern void (*send_usb_response)(int, int, int);
+extern void (**ptr_send)();
+extern void (**ptr_recv)();
+extern void (*orig_ptr_send)();
+extern void (*orig_ptr_recv)();
 
-int (*send_dword)();
-int (*recv_dword)();
+extern int (*send_dword)();
+extern int (*recv_dword)();
 // addr, sz
-int (*send_data)();
+extern int (*send_data)();
 // addr, sz, flags (=0)
-int (*recv_data)();
+extern int (*recv_data)();
 
-void low_uart_put(int ch);
+extern void low_uart_put(int ch);
 
-void _putchar(char character);
+extern void _putchar(char character);
 
 #endif
