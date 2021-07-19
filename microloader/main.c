@@ -29,7 +29,7 @@ int puts(const char *line) {
 }
 
 int main() {
-
+    cache_clean((void *)0x41E0037C, 0x400);
     puts("microloader");
 
     struct device_t *dev = (void*)get_device();
