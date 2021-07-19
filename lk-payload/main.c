@@ -81,6 +81,7 @@ static void parse_gpt() {
 int main() {
     int ret = 0;
     printf("This is LK-payload for mantis by xyz and k4y0z. Copyright 2019\n");
+    printf("Ported to sheldon/p by k4y0z, t0x1cSH and R0rt1z2. Copyright 2021\n");
 
     uint32_t **argptr = (void*)0x41E00020;
     uint32_t *arg = *argptr;
@@ -89,7 +90,7 @@ int main() {
     int fastboot = 0;
 
     boot_reason = (uint32_t *)(*(uint32_t *)(0x41E5D904) + 272);
-    y_cable = (uint8_t *)(*(uint32_t *)(0x41E5D904) + 365);
+    y_cable = (uint8_t *)(*(uint32_t *)(0x41E5E954) + 365);
 
     printf("boot_reason: %u\n", *boot_reason);
     printf("y_cable: %u\n", *y_cable);
@@ -199,7 +200,7 @@ int main() {
 	
         *g_boot_mode = 99;
 
-        video_printf("=> HACKED FASTBOOT mode: (%d) - xyz, k4y0z\n", *o_boot_mode);
+        video_printf("=> HACKED FASTBOOT mode: (%d) - xyz, k4y0z, t0x1cSH, R0rt1z2\n", *o_boot_mode);
     }
     else if(*g_boot_mode == 2) {
         video_printf("=> RECOVERY mode...");
@@ -214,7 +215,7 @@ int main() {
     *patch = 0x4770;   // bx lr
 
     // amzn_verify_unlock (enable all commands)
-    patch = (void*)0x41E01EA0;
+    patch = (void*)0x41e01ea8;
     *patch++ = 0x2000; // movs r0, #0
     *patch = 0x4770;   // bx lr
 
@@ -228,7 +229,7 @@ int main() {
     cache_clean((void*)LK_BASE, LK_SIZE);
 
     printf("Jump lk\n");
-    int (*app)() = (void*)0x41E25371;
+    int (*app)() = (void*)0x41e2585d;
     app();
 
     while (1) {
