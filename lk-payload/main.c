@@ -89,7 +89,7 @@ int main() {
 
     int fastboot = 0;
 
-    boot_reason = (uint32_t *)(*(uint32_t *)(0x41E5D904) + 272);
+    boot_reason = (uint32_t *)(*(uint32_t *)(0x41E5E954) + 272);
     y_cable = (uint8_t *)(*(uint32_t *)(0x41E5E954) + 365);
 
     printf("boot_reason: %u\n", *boot_reason);
@@ -184,8 +184,8 @@ int main() {
       // UART flag on MISC
       if(strncmp(bootloader_msg + 0x10, "UART_PLEASE", 11) == 0) {
         // Force uart enable
-        char* disable_uart = (char*)0x41E3A3AB;
-        strcpy(disable_uart, " printk.disable_uart=0");
+        char* disable_uart = (char*)0x41e3b663;
+        strcpy(disable_uart, "printk.disable_uart=0");
       }
 
     }
