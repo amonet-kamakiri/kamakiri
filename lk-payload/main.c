@@ -21,13 +21,16 @@ void _putchar(char character)
     low_uart_put(character);
 }
 
-
 size_t (*original_read)(struct device_t *dev, uint64_t block_off, void *dst, uint32_t sz, uint32_t part); 
 uint32_t * boot_reason = 0;
 uint8_t * y_cable = 0;
 uint8_t boot_system = 0;
 
 uint64_t g_boot, g_recovery, g_lk, g_misc;
+
+void ** ramdisk = 0;
+void ** rootfs_mem_offset = (void *)0x41e557e4;
+uint32_t * rootfs_size = 0;
 
 size_t read_func(struct device_t *dev, uint64_t block_off, void *dst, uint32_t sz, uint32_t part) {
     printf("read_func hook\n");
@@ -41,11 +44,21 @@ size_t read_func(struct device_t *dev, uint64_t block_off, void *dst, uint32_t s
         }
         if (sz < 0x400) {
             ret = original_read(dev, block_off + 0x400, dst, sz, part);
+            ramdisk = dst + 0x14;
+            rootfs_size = dst + 0x10;
+            printf("ramdisk: 0x%08X\n", *ramdisk);
+            printf("rootfs_size: 0x%08X\n", *rootfs_size);
+            printf("rootfs_mem_offset: 0x%08X\n", *rootfs_mem_offset);
         } else {
             void *second_copy = (char*)dst + 0x400;
             ret = original_read(dev, block_off, dst, sz, part);
             memcpy(dst, second_copy, 0x400);
             memset(second_copy, 0, 0x400);
+            if(*g_boot_mode != 2 && *ramdisk && *rootfs_mem_offset && *rootfs_size){
+                // We want ramdisk during normal boot to support Magisk etc.
+                printf("copy ramdisk from 0x%08X to 0x%08X (size = 0x%08X)\n", *rootfs_mem_offset, *ramdisk, *rootfs_size);
+                memcpy(*ramdisk, *rootfs_mem_offset, *rootfs_size);
+            }
         }
     } else {
         ret = original_read(dev, block_off, dst, sz, part);
@@ -218,6 +231,10 @@ int main() {
     patch = (void*)0x41e01ea8;
     *patch++ = 0x2000; // movs r0, #0
     *patch = 0x4770;   // bx lr
+
+    // We want ramdisk during normal boot to support Magisk etc.
+    patch = (void*)0x41e24f1a;
+    *patch++ = 0xe010;
 
     // hook bootimg read function
     uint32_t *patch32;
