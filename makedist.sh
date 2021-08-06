@@ -31,7 +31,7 @@ cp META-INF/com/google/android/{update-binary,updater-script} dist/unlock/META-I
 
 mkdir -p dist/gptfix/kamakiri/bin
 cp gpt-fix.sh dist/gptfix/kamakiri/
-cp bin/gpt-mantis.bin dist/gptfix/kamakiri/bin/
+cp bin/gpt-sheldon.bin dist/gptfix/kamakiri/bin/
 
 mkdir -p dist/full
 cp -r dist/unlock/* dist/full/
