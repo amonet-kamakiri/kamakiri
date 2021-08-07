@@ -290,8 +290,15 @@ class Device:
 
         size = int.from_bytes(self.dev.read(4), byteorder="big")
         data = self.dev.read(size)
-        if len(data) != size:
+        if len(data) != size or data == to_bytes(0xffffffff, 4):
             raise RuntimeError("read fail")
+
+        elif data == to_bytes(0xbeefdeed, 4):
+            raise RuntimeError("IDME invalid")
+
+        elif data == to_bytes(0xdeadbeef, 4):
+            log(field_name + " not found in IDME")
+            return None
 
         return data
 

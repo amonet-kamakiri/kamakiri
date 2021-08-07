@@ -196,6 +196,8 @@ int main() {
         }
         case 0x7000: {
             char field_name[16] = { 0 };
+            const char beefdeed[] = "beefdeed";
+            uint32_t result = 0;
             recv_data(field_name, 16, 0);
             printf("Read %s from IDME", field_name);
             printf("Switch to partition %d => ", 2);
@@ -209,6 +211,12 @@ int main() {
                 memset(buf, 0, sizeof(buf));
                 if (mmc_read(&host, block++, buf) != 0) {
                     printf("Read error!\n");
+                    result = 0xffffffff;
+                    break;
+                }
+                if (block == 1 && memcmp(buf, &beefdeed, 8)) {
+                    printf("IDME invalid!\n");
+                    result = 0xbeefdeed;
                     break;
                 }
             }
@@ -225,6 +233,7 @@ int main() {
                         memset(buf, 0, sizeof(buf));
                         if (mmc_read(&host, block++, buf) != 0) {
                             printf("Read error!\n");
+                            result = 0xffffffff;
                             break;
                         }
                         else {
@@ -234,9 +243,12 @@ int main() {
                     }
                 }
             }
-            else {
+            else if (!result){
+                result = 0xdeadbeef;
+            }
+            if (result) {
                 send_dword(4);
-                send_dword(0xFFFFFFFF);
+                send_dword(result);
             }
             break;
         }
