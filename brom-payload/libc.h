@@ -27,3 +27,5 @@ void *memcpy(void *dest, const void *src, size_t n);
 int strcmp(const char *s1, const char *s2);
 int memcmp(const void* s1, const void* s2, size_t n);
 char *strstr(const char *s1, const char *s2);
+void *memmem (const void *haystack_start, size_t haystack_len,
+          const void *needle_start, size_t needle_len);

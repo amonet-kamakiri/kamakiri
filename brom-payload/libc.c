@@ -143,3 +143,24 @@ char *strstr(const char *s1, const char *s2)
             return (char *)s1-1;
     return 0;
 }
+
+void *memmem(const void *haystack_start, size_t haystack_len,
+          const void *needle_start, size_t needle_len)
+{
+    if (needle_len == 0)
+        return (void *) haystack_start;
+    if (haystack_len < needle_len)
+        return NULL;
+    for (size_t i = 0; i < haystack_len - needle_len; i++) {
+        if (((unsigned char *)(haystack_start + i))[0] == ((unsigned char *)needle_start)[0]) {
+            haystack_start += i;
+            haystack_len -= i;
+            break;
+        }
+    }
+    for (size_t i = 0; i < haystack_len - needle_len; i++) {
+        if (!memcmp(haystack_start + i, needle_start, needle_len))
+            return (void *) haystack_start + i;
+    }
+    return NULL;
+}
