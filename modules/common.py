@@ -278,6 +278,23 @@ class Device:
 
         return data
 
+    def idme_read(self, field_name):
+        # magic
+        self.dev.write(p32_be(0xf00dd00d))
+        # cmd
+        self.dev.write(p32_be(0x7000))
+
+        if len(field_name) < 16:
+            field_name += b"\x00" * (16 - len(field_name))
+        self.dev.write(field_name)
+
+        size = int.from_bytes(self.dev.read(4), byteorder="big")
+        data = self.dev.read(size)
+        if len(data) != size:
+            raise RuntimeError("read fail")
+
+        return data
+
     def rpmb_write(self, data):
         if len(data) != 0x100:
             raise RuntimeError("data must be 0x100 bytes")

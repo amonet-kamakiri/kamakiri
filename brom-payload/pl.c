@@ -194,6 +194,52 @@ int main() {
             send_data((char*)address, size);
             break;
         }
+        case 0x7000: {
+            char field_name[16] = { 0 };
+            recv_data(field_name, 16, 0);
+            printf("Read %s from IDME", field_name);
+            printf("Switch to partition %d => ", 2);
+            ret = mmc_set_part(&host, 2);
+            printf("0x%08X\n", ret);
+            mdelay(500); // just in case
+            uint32_t block = 0;
+            void *type_offset = 0;
+            while (!(type_offset = memmem(buf, 0x200, &field_name, 16)) && block < 0x2000) {
+                printf("Read block 0x%08X\n", block);
+                memset(buf, 0, sizeof(buf));
+                if (mmc_read(&host, block++, buf) != 0) {
+                    printf("Read error!\n");
+                    break;
+                }
+            }
+            if (type_offset) {
+                uint32_t len = *(uint32_t*)(type_offset + 16);
+                type_offset += 16 + 12;
+                uint32_t buf_len = sizeof(buf) - (type_offset - (void *)buf);
+                send_dword(len);
+                send_data(type_offset, len < buf_len ? len : buf_len);
+                if(len > buf_len) {
+                    len -= buf_len;
+                    while (len > 0) {
+                        printf("Read block 0x%08X\n", block);
+                        memset(buf, 0, sizeof(buf));
+                        if (mmc_read(&host, block++, buf) != 0) {
+                            printf("Read error!\n");
+                            break;
+                        }
+                        else {
+                            send_data(buf, len < sizeof(buf) ? len : sizeof(buf));
+                            len -= len < sizeof(buf) ? len : sizeof(buf);
+                        }
+                    }
+                }
+            }
+            else {
+                send_dword(4);
+                send_dword(0xFFFFFFFF);
+            }
+            break;
+        }
         case 0x3000: {
             printf("Reboot\n");
             volatile uint32_t *reg = (volatile uint32_t *)0x10007000;
