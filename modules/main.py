@@ -26,6 +26,12 @@ def main(dev):
     else:
         load_payload(dev)
 
+    device_type_id = dev.idme_read(b"device_type_id").rstrip(b"\x00").decode("utf-8")
+
+    if device_type_id != "A31DTMEEVDDOIV" and device_type_id != "A265XOI9586NML":
+        log("Wrong device detected: " + device_type_id)
+        exit(1)
+
     if len(sys.argv) == 2 and sys.argv[1] == "fixgpt":
         dev.emmc_switch(0)
         log("Flashing GPT")
@@ -44,12 +50,6 @@ def main(dev):
     # 2) Sanity check boot0
     log("Check boot0")
     switch_boot0(dev)
-
-    device_type_id = dev.idme_read(b"device_type_id").rstrip(b"\x00").decode("utf-8")
-
-    if device_type_id != "A31DTMEEVDDOIV" and device_type_id != "A265XOI9586NML":
-        log("Wrong device detected: " + device_type_id)
-        exit(1)
 
     # 3) Sanity check rpmb
     log("Check rpmb")
