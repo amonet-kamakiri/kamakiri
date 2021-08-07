@@ -195,6 +195,7 @@ int main() {
             break;
         }
         case 0x7000: {
+            char idme_buf[0x400] = { 0 };
             char field_name[16] = { 0 };
             const char beefdeed[] = "beefdeed";
             uint32_t result = 0;
@@ -206,7 +207,7 @@ int main() {
             mdelay(500); // just in case
             uint32_t block = 0;
             void *type_offset = 0;
-            while (!(type_offset = memmem(buf, 0x200, &field_name, 16)) && block < 0x2000) {
+            while (!(type_offset = memmem(idme_buf, 0x400, &field_name, 16)) && block < 0x2000) {
                 printf("Read block 0x%08X\n", block);
                 memset(buf, 0, sizeof(buf));
                 if (mmc_read(&host, block++, buf) != 0) {
@@ -219,11 +220,13 @@ int main() {
                     result = 0xbeefdeed;
                     break;
                 }
+                memcpy(idme_buf, idme_buf + 0x200, 0x200);
+                memcpy(idme_buf + 0x200, buf, 0x200);
             }
             if (type_offset) {
                 uint32_t len = *(uint32_t*)(type_offset + 16);
                 type_offset += 16 + 12;
-                uint32_t buf_len = sizeof(buf) - (type_offset - (void *)buf);
+                uint32_t buf_len = sizeof(idme_buf) - (type_offset - (void *)idme_buf);
                 send_dword(len);
                 send_data(type_offset, len < buf_len ? len : buf_len);
                 if(len > buf_len) {
