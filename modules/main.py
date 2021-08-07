@@ -28,7 +28,12 @@ def main(dev):
 
     device_type_id = dev.idme_read(b"device_type_id").rstrip(b"\x00").decode("utf-8")
 
-    if device_type_id != "A31DTMEEVDDOIV" and device_type_id != "A265XOI9586NML":
+    log("Check device_type_id")
+    if device_type_id == "A31DTMEEVDDOIV":
+        log("Detected sheldon (" + device_type_id + ")")
+    elif device_type_id == "A265XOI9586NML":
+        log("Detected sheldonp (" + device_type_id + ")")
+    else:
         log("Wrong device detected: " + device_type_id)
         exit(1)
 
