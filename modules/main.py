@@ -26,6 +26,15 @@ def main(dev):
     else:
         load_payload(dev)
 
+    device_type_id = dev.idme_read(b"device_type_id").rstrip(b"\x00").decode("utf-8")
+
+    log("Check device_type_id")
+    if device_type_id == "AKPGW064GI9HE":
+        log("Detected mantis (" + device_type_id + ")")
+    else:
+        log("Wrong device detected: " + device_type_id)
+        exit(1)
+
     if len(sys.argv) == 2 and sys.argv[1] == "fixgpt":
         dev.emmc_switch(0)
         log("Flashing GPT")
