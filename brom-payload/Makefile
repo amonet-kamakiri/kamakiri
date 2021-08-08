@@ -10,9 +10,9 @@ STAGE1 := stage1
 STAGE2 := stage2
 PL := pl
 
-STAGE1_SRC = stage1.c common.c
-STAGE2_SRC = stage2.c common.c libc.c printf.c drivers/sd.c drivers/mmc.c crypto/sha256.c crypto/hmac-sha256.c
-PL_SRC = pl.c libc.c printf.c drivers/sd.c drivers/mmc.c crypto/sha256.c crypto/hmac-sha256.c
+STAGE1_SRC = stage1.c brom_common.c common.c
+STAGE2_SRC = stage2.c brom_common.c common.c payload_common.c libc.c printf.c drivers/sd.c drivers/mmc.c crypto/sha256.c crypto/hmac-sha256.c
+PL_SRC = pl.c common.c payload_common.c libc.c printf.c drivers/sd.c drivers/mmc.c crypto/sha256.c crypto/hmac-sha256.c
 ASM_SRC = start.S
 
 OBJ = $(STAGE1_SRC:%.c=$(STAGE1)/%.o) $(ASM_SRC:%.S=$(STAGE1)/%.o)

@@ -1,3 +1,4 @@
+#include "brom_common.h"
 #include "common.h"
 
 int print(char* s){
