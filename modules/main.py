@@ -64,13 +64,6 @@ def main(dev):
             dev.kick_watchdog()
             time.sleep(1)
 
-    if not dev.preloader:
-        # Clear preloader so, we get into bootrom without shorting, should the script stall (we flash preloader as last step)
-        # 4) Downgrade preloader
-        log("Clear preloader header")
-        switch_boot0(dev)
-        flash_data(dev, b"EMMC_BOOT" + b"\x00" * ((0x200 * 4) - 9), 0)
-
     # 5) Zero out rpmb to enable downgrade
     log("Downgrade rpmb")
     dev.rpmb_write(b"\x00" * 0x100)
