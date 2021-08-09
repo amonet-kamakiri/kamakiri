@@ -72,7 +72,7 @@ if [ "$?" -eq "0" ]; then
   done
 fi
 
-check_product "sheldon" " - Amazon FireTV Stick 4K - "
+check_product "sheldon" " - Amazon FireTV Stick 3rd Gen (sheldon/p) - "
 
 TMPDIR=/dev/tmp
 INSTALLER=$TMPDIR/install
