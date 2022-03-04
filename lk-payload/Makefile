@@ -18,6 +18,7 @@ DEP = $(OBJ:%.o=%.d)
 
 $(BUILD_DIR)/$(TARGET).bin: $(BUILD_DIR)/$(TARGET).elf
 	$(OBJCOPY) -O binary $^ $@
+	dd if=/dev/zero bs=512 count=1 >>$@ 2>/dev/null
 
 $(BUILD_DIR)/$(TARGET).elf: $(OBJ)
 	$(LD) -o $@ $^ $(LDFLAGS)
